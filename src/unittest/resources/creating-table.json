@@ -3,68 +3,68 @@
         "TableArn": "arn:aws:dynamodb:eu-west-1:123456789012:table/xxx",
         "AttributeDefinitions": [
             {
-                "AttributeName": "date", 
+                "AttributeName": "date",
                 "AttributeType": "N"
-            }, 
+            },
             {
-                "AttributeName": "date_exposeId", 
+                "AttributeName": "date_exposeId",
                 "AttributeType": "S"
-            }, 
+            },
             {
-                "AttributeName": "exposeId_ssoId", 
+                "AttributeName": "exposeId_ssoId",
                 "AttributeType": "S"
-            }, 
+            },
             {
-                "AttributeName": "ownerSsoId", 
+                "AttributeName": "ownerSsoId",
                 "AttributeType": "S"
             }
-        ], 
+        ],
         "GlobalSecondaryIndexes": [
             {
-                "IndexSizeBytes": 0, 
+                "IndexSizeBytes": 0,
                 "IndexName": "yyy",
                 "Projection": {
                     "ProjectionType": "ALL"
-                }, 
+                },
                 "ProvisionedThroughput": {
-                    "NumberOfDecreasesToday": 0, 
-                    "WriteCapacityUnits": 300, 
+                    "NumberOfDecreasesToday": 0,
+                    "WriteCapacityUnits": 300,
                     "ReadCapacityUnits": 400
-                }, 
-                "IndexStatus": "ACTIVE", 
+                },
+                "IndexStatus": "ACTIVE",
                 "KeySchema": [
                     {
-                        "KeyType": "HASH", 
+                        "KeyType": "HASH",
                         "AttributeName": "ownerSsoId"
-                    }, 
+                    },
                     {
-                        "KeyType": "RANGE", 
+                        "KeyType": "RANGE",
                         "AttributeName": "date_exposeId"
                     }
-                ], 
+                ],
                 "IndexArn": "arn:aws:dynamodb:eu-west-1:123456789012:table/xxx/index/yyy",
                 "ItemCount": 0
             }
-        ], 
+        ],
         "ProvisionedThroughput": {
-            "NumberOfDecreasesToday": 0, 
-            "WriteCapacityUnits": 300, 
+            "NumberOfDecreasesToday": 0,
+            "WriteCapacityUnits": 300,
             "ReadCapacityUnits": 400
-        }, 
-        "TableSizeBytes": 0, 
-        "TableName": "performance_objectPerformance", 
-        "TableStatus": "ACTIVE", 
+        },
+        "TableSizeBytes": 0,
+        "TableName": "performance_objectPerformance",
+        "TableStatus": "CREATING",
         "KeySchema": [
             {
-                "KeyType": "HASH", 
+                "KeyType": "HASH",
                 "AttributeName": "exposeId_ssoId"
-            }, 
+            },
             {
-                "KeyType": "RANGE", 
+                "KeyType": "RANGE",
                 "AttributeName": "date"
             }
-        ], 
-        "ItemCount": 0, 
+        ],
+        "ItemCount": 0,
         "CreationDateTime": 1442504545.54
     }
 }

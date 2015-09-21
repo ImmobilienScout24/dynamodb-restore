@@ -1,6 +1,6 @@
-from __future__ import print_function
-import time
 import json
+import tempfile
+import re
 
 import boto3
 
@@ -20,47 +20,53 @@ def get_index(source_index):
     }
 
 
-def restore_schema(table_name):
-    with open("performance_objectPerformance.json", "r") as f:
-        table = json.loads(f.read())['Table']
-
-    global_secondary_indexes = []
-    for source_index in table.get('GlobalSecondaryIndexes', []):
-        target_index = get_index(source_index)
-        target_index["ProvisionedThroughput"] = get_provisioned_throughput(source_index)
-        global_secondary_indexes.append(target_index)
-
-    local_secondary_indexes = []
-    for source_index in table.get("LocalSecondaryIndexes", []):
-        local_secondary_indexes.append(get_index(source_index))
-
+def restore_schema(target_table_name, table_definition):
     create_table_args = {
-        "TableName": table_name,
-        "AttributeDefinitions": table['AttributeDefinitions'],
-        "KeySchema": table['KeySchema'],
-        "ProvisionedThroughput": get_provisioned_throughput(table)
+        "TableName": target_table_name,
+        "AttributeDefinitions": table_definition['AttributeDefinitions'],
+        "KeySchema": table_definition['KeySchema'],
+        "ProvisionedThroughput": get_provisioned_throughput(table_definition)
     }
 
-    if len(global_secondary_indexes) > 0:
+    global_secondary_index_definitions = table_definition.get('GlobalSecondaryIndexes', [])
+    if global_secondary_index_definitions:
+        global_secondary_indexes = []
+        for source_index in global_secondary_index_definitions:
+            target_index = get_index(source_index)
+            target_index["ProvisionedThroughput"] = get_provisioned_throughput(source_index)
+            global_secondary_indexes.append(target_index)
+
         create_table_args['GlobalSecondaryIndexes'] = global_secondary_indexes
-    if len(local_secondary_indexes) > 0:
+
+    local_secondary_index_definitions = table_definition.get("LocalSecondaryIndexes", [])
+    if local_secondary_index_definitions:
+        local_secondary_indexes = []
+        for source_index in local_secondary_index_definitions:
+            local_secondary_indexes.append(get_index(source_index))
+
         create_table_args['LocalSecondaryIndexes'] = local_secondary_indexes
-    if table.has_key("StreamSpecification"):
-        create_table_args['StreamSpecification'] = table["StreamSpecification"]
+
+    if table_definition.has_key("StreamSpecification"):
+        create_table_args['StreamSpecification'] = table_definition["StreamSpecification"]
 
     dynamodb.create_table(**create_table_args)
 
-    wait_for_table(table_name)
+    dynamodb.get_waiter("table_exists").wait(TableName=target_table_name)
 
 
-def wait_for_table(table_name):
-    for i in xrange(0, 100):
-        try:
-            table = dynamodb.describe_table(TableName=table_name)
-            if table['Table']['TableStatus'] == "ACTIVE":
-                return
-        finally:
-            time.sleep(10 * i)
+def load_schema(schema_location, table_name):
+    m = re.match("s3://([\w-]+)/(.*)", schema_location)
+    if m:
+        s3 = boto3.client("s3")
+        bucket = m.group(1)
+        object_name = m.group(2)
+        local_file = tempfile.gettempdir() + "/" + table_name + "-schema.json"
+        s3.download_file(bucket, object_name, local_file)
+    else:
+        local_file = schema_location
+
+    with open(local_file, "r") as f:
+        return json.loads(f.read())['Table']
 
 
 def create_datapipeline(definition, subnet_id, ddb_table_name, s3_loc):
