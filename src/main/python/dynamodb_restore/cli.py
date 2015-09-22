@@ -20,6 +20,7 @@ Options:
 import sys
 from docopt import docopt
 from dynamodb_restore import restore
+from botocore.exceptions import ClientError
 
 def main():
     args = docopt(__doc__)
@@ -33,6 +34,9 @@ def main():
 
     try:
         restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, region)
+    except ClientError as e:
+        print "Error calling the AWS API. Your credentials may be expired! ({0})".format(e)
+        sys.exit(1)
     except Exception as e:
         print e
         sys.exit(1)
