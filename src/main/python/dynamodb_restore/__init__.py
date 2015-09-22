@@ -20,10 +20,9 @@ def _get_index(source_index):
     }
 
 
-def restore_schema(table_definition, region, target_table_name=None):
+def restore_schema(table_definition, region, table_name):
 
     dynamodb = boto3.client('dynamodb', region_name=region)
-    table_name = target_table_name if target_table_name else table_definition["TableName"]
 
     create_table_args = {
         "TableName": table_name,
@@ -100,3 +99,24 @@ def create_datapipeline(definition, subnet_id, ddb_table_name, s3_loc, region):
         pipelineId=pipeline_id,
         startTimestamp=datetime.datetime.utcnow()
     )
+
+def restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, region):
+    if data_only:
+        if not table_name:
+            raise Exception("Please specify --tablename if you use --data-only!")
+
+        restore_table_name = table_name
+
+    else:
+        if not table_definition_uri:
+            raise Exception("Please specify --table-definition-uri!")
+
+        table_definition = load_schema(table_definition_uri)
+        restore_table_name = table_name if table_name else table_definition["TableName"]
+
+        print "Restoring schema for {0}".format(restore_table_name)
+        restore_schema(table_definition, region, restore_table_name)
+    print "Creating datapipeline"
+    create_datapipeline(pipeline_definition_uri, subnet_id, restore_table_name, backup_source,
+                        region)
+    print "Restore triggered successfully!"
