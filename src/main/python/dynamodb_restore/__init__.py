@@ -100,23 +100,26 @@ def create_datapipeline(definition, subnet_id, ddb_table_name, s3_loc, region):
         startTimestamp=datetime.datetime.utcnow()
     )
 
+    return pipeline_id
+
 def restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, region):
     if data_only:
         if not table_name:
-            raise Exception("Please specify --tablename if you use --data-only!")
+            raise Exception("Please specify table name if you use data-only!")
 
         restore_table_name = table_name
 
     else:
         if not table_definition_uri:
-            raise Exception("Please specify --table-definition-uri!")
+            raise Exception("Please specify table-definition-uri!")
 
         table_definition = load_schema(table_definition_uri)
         restore_table_name = table_name if table_name else table_definition["TableName"]
 
         print "Restoring schema for {0}".format(restore_table_name)
         restore_schema(table_definition, region, restore_table_name)
+
     print "Creating datapipeline"
-    create_datapipeline(pipeline_definition_uri, subnet_id, restore_table_name, backup_source,
-                        region)
-    print "Restore triggered successfully!"
+    pipeline_id = create_datapipeline(pipeline_definition_uri, subnet_id, restore_table_name, backup_source, region)
+
+    print "Restore triggered successfully, see data pipeline with id {0}".format(pipeline_id)
