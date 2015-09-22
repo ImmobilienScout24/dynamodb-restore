@@ -12,6 +12,7 @@ def _get_provisioned_throughput(table_definition):
         "WriteCapacityUnits": table_definition["ProvisionedThroughput"]["WriteCapacityUnits"]
     }
 
+
 def _get_index(source_index):
     return {
         "IndexName": source_index["IndexName"],
@@ -21,7 +22,6 @@ def _get_index(source_index):
 
 
 def restore_schema(table_definition, region, table_name):
-
     dynamodb = boto3.client('dynamodb', region_name=region)
 
     create_table_args = {
@@ -101,6 +101,7 @@ def create_datapipeline(definition, subnet_id, ddb_table_name, s3_loc, region):
     )
 
     return pipeline_id
+
 
 def restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, region):
     if data_only:
