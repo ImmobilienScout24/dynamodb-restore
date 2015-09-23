@@ -8,7 +8,6 @@ use_plugin("python.coverage")
 use_plugin("python.distutils")
 use_plugin('copy_resources')
 
-
 name = "dynamodb-restore"
 default_task = "publish"
 version = 1.0
@@ -28,14 +27,15 @@ def set_properties(project):
     project.set_property('distutils_console_scripts', ['dynamodb-restore=dynamodb_restore.cli:main'])
 
     project.set_property('distutils_classifiers', [
-    'Development Status :: 4 - Beta',
-    'Environment :: Console',
-    'Intended Audience :: Developers',
-    'Intended Audience :: System Administrators',
-    'License :: OSI Approved :: Apache Software License',
-    'Programming Language :: Python',
-    'Topic :: System :: Systems Administration'
-])
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python',
+        'Topic :: System :: Systems Administration'
+    ])
+
 
 @init(environments='teamcity')
 def set_properties_for_teamcity_builds(project):
