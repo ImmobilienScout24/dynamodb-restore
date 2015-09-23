@@ -31,8 +31,10 @@ def main():
         table_name = args["--tablename"]
         backup_source = args["--backup-source"]
         region = args["--region"]
-        subnet_id = args.get("--subnetId", get_first_subnet_id_from_vpc_stack(region))
+        subnet_id = args["--subnetId"] if args["--subnetId"] else get_first_subnet_id_from_vpc_stack(region)
         data_only = args["--data-only"]
+
+        print "using subnet id: {0}".format(subnet_id)
 
         restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, region)
     except ClientError as e:
