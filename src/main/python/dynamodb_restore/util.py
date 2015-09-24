@@ -18,3 +18,6 @@ def get_subnet_ids_from_vpc_stack(region):
 def get_first_subnet_id_from_vpc_stack(region):
     subnets = get_subnet_ids_from_vpc_stack(region)
     return subnets.split(',')[0]
+
+def get_log_dest_from_backup_source(backup_source):
+    return backup_source.rstrip("/").rsplit("/", 1)[0] + "/log/restore/"

@@ -78,13 +78,14 @@ def load_json_file(location):
         return json.load(f)
 
 
-def create_datapipeline(definition, subnet_id, ddb_table_name, s3_loc, region):
+def create_datapipeline(definition, subnet_id, log_dest, ddb_table_name, s3_loc, region):
     pipeline_name = "restore_" + ddb_table_name
     pipeline_template = load_json_file(definition)
 
     parameter_values = [{"id": "mySubnetId", "stringValue": subnet_id},
                         {"id": "myDDBTableName", "stringValue": ddb_table_name},
-                        {"id": "myInputS3Loc", "stringValue": s3_loc}]
+                        {"id": "myInputS3Loc", "stringValue": s3_loc},
+                        {"id": "myLogS3Loc", "stringValue": log_dest}]
 
     client = boto3.client("datapipeline", region_name=region)
     pipeline = client.create_pipeline(name=pipeline_name, uniqueId=pipeline_name)
@@ -103,7 +104,7 @@ def create_datapipeline(definition, subnet_id, ddb_table_name, s3_loc, region):
     return pipeline_id
 
 
-def restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, region):
+def restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, log_dest, region):
     if data_only:
         if not table_name:
             raise Exception("Please specify table name if you use data-only!")
@@ -121,6 +122,6 @@ def restore(data_only, table_name, table_definition_uri, pipeline_definition_uri
         restore_schema(table_definition, region, restore_table_name)
 
     print "Creating datapipeline"
-    pipeline_id = create_datapipeline(pipeline_definition_uri, subnet_id, restore_table_name, backup_source, region)
+    pipeline_id = create_datapipeline(pipeline_definition_uri, subnet_id, log_dest, restore_table_name, backup_source, region)
 
     print "Restore triggered successfully, see data pipeline with id {0}".format(pipeline_id)

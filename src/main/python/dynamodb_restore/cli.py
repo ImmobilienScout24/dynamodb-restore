@@ -7,8 +7,8 @@ Otherwise this tool will create a table. You need to specify a table-definition-
 
 
 Usage:
-  dynamodb-restore --data-only --backup-source=s3_uri --tablename=tablename [--pipeline-definition-uri=local_file_or_s3_uri] [--subnetId=subnetId] [--region=region]
-  dynamodb-restore --backup-source=s3_uri --table-definition-uri=local_file_or_s3_uri [--tablename=tablename] [--pipeline-definition-uri=local_file_or_s3_uri] [--subnetId=subnetId] [--region=region]
+  dynamodb-restore --data-only --backup-source=s3_uri --tablename=tablename [--pipeline-definition-uri=local_file_or_s3_uri] [--subnetId=subnetId] [--log-dest=s3_uri] [--region=region]
+  dynamodb-restore --backup-source=s3_uri --table-definition-uri=local_file_or_s3_uri [--tablename=tablename] [--pipeline-definition-uri=local_file_or_s3_uri] [--subnetId=subnetId] [--log-dest=s3_uri] [--region=region]
 
 Options:
   -h --help                         Show this screen.
@@ -20,7 +20,7 @@ Options:
 import sys
 from docopt import docopt
 from dynamodb_restore import restore
-from dynamodb_restore.util import get_first_subnet_id_from_vpc_stack
+from dynamodb_restore.util import get_first_subnet_id_from_vpc_stack, get_log_dest_from_backup_source
 from botocore.exceptions import ClientError
 
 def main():
@@ -32,11 +32,12 @@ def main():
         backup_source = args["--backup-source"]
         region = args["--region"]
         subnet_id = args["--subnetId"] if args["--subnetId"] else get_first_subnet_id_from_vpc_stack(region)
+        log_dest = args["--log-dest"] if args["--log-dest"] else get_log_dest_from_backup_source(backup_source)
         data_only = args["--data-only"]
 
         print "using subnet id: {0}".format(subnet_id)
 
-        restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, region)
+        restore(data_only, table_name, table_definition_uri, pipeline_definition_uri, backup_source, subnet_id, log_dest, region)
     except ClientError as e:
         print "Error calling the AWS API. Your credentials may be expired! ({0})".format(e)
         sys.exit(1)
