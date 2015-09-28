@@ -7,8 +7,13 @@ Otherwise this tool will create a table. You need to specify a table-definition-
 
 
 Usage:
-  dynamodb-restore --data-only --backup-source=s3_uri --tablename=tablename --notify-mail=notify_mail [--write-throughput=write_throughput] [--pipeline-definition-uri=local_file_or_s3_uri] [--subnetId=subnetId] [--log-dest=s3_uri] [--region=region]
-  dynamodb-restore --backup-source=s3_uri --table-definition-uri=local_file_or_s3_uri --notify-mail=notify_mail [--write-throughput=write_throughput] [--tablename=tablename] [--pipeline-definition-uri=local_file_or_s3_uri] [--subnetId=subnetId] [--log-dest=s3_uri] [--region=region]
+  dynamodb-restore  --data-only --backup-source=s3_uri --tablename=tablename --notify-mail=notify_mail
+                    [--write-throughput=write_throughput] [--pipeline-definition-uri=local_file_or_s3_uri]
+                    [--subnetId=subnetId] [--log-dest=s3_uri] [--region=region]
+  dynamodb-restore  --backup-source=s3_uri --table-definition-uri=local_file_or_s3_uri --notify-mail=notify_mail
+                    [--write-throughput=write_throughput] [--tablename=tablename]
+                    [--pipeline-definition-uri=local_file_or_s3_uri] [--subnetId=subnetId] [--log-dest=s3_uri]
+                    [--region=region]
 
 Options:
   -h --help                             Show this screen.
@@ -24,6 +29,7 @@ from docopt import docopt
 from dynamodb_restore import DynamoDbRestoreHandler
 from dynamodb_restore.util import get_first_subnet_id_from_vpc_stack, get_log_dest_from_backup_source
 from botocore.exceptions import ClientError
+
 
 def main():
     try:
@@ -42,7 +48,8 @@ def main():
         print "Using subnet id: {0}".format(subnet_id)
 
         handler = DynamoDbRestoreHandler(data_only, table_name, table_definition_uri, pipeline_definition_uri,
-                                         backup_source, subnet_id, log_dest, mail_address, desired_write_throughput, region)
+                                         backup_source, subnet_id, log_dest, mail_address, desired_write_throughput,
+                                         region)
 
         handler.restore()
     except ClientError as e:

@@ -18,7 +18,7 @@ class DynamoDbRestoreHandler(object):
         self.subnet_id = subnet_id
         self.log_dest = log_dest
         self.mail_address = mail_address
-        self.desired_write_throughput = int(desired_write_throughput)
+        self.desired_write_throughput = int(desired_write_throughput) if desired_write_throughput else 0
         self.region = region
 
     @staticmethod
@@ -83,6 +83,7 @@ class DynamoDbRestoreHandler(object):
 
         dynamodb.create_table(**create_table_args)
 
+        print("Waiting for table {0} reaching state ACTIVE".format(table_name))
         dynamodb.get_waiter("table_exists").wait(TableName=table_name)
 
         return table_name
@@ -90,7 +91,8 @@ class DynamoDbRestoreHandler(object):
     def create_notification_topic(self, mail_address):
         topic_name = "dynamodb_restore_notification_{0}".format(self.restore_table_name)
 
-        print("Creating notification topic for {0}. Please ensure to confirm the subscription mail sent to the address!".format(mail_address))
+        print("Creating notification topic for {0}. Please ensure to confirm the subscription mail sent to the address!"
+              .format(mail_address))
 
         client = boto3.client("sns", region_name=self.region)
 
@@ -155,11 +157,14 @@ class DynamoDbRestoreHandler(object):
         client = boto3.client("dynamodb", region_name=self.region)
         provisioned_throughput = client.describe_table(TableName=restore_table_name)['Table']['ProvisionedThroughput']
         if desired_write_throughput > provisioned_throughput['WriteCapacityUnits']:
-            print("Currently provisioned WriteThroughput on {0}: {1}".format(restore_table_name, provisioned_throughput[
-                'WriteCapacityUnits']))
+            print("Provisioned WriteThroughput on {0}: {1}".format(restore_table_name,
+                                                                   provisioned_throughput['WriteCapacityUnits']))
+            print("overwriting with: {0}".format(desired_write_throughput))
+            print("When finished please adjust WriteThroughput to the originally provisioned value!")
             client.update_table(TableName=restore_table_name,
                                 ProvisionedThroughput={'ReadCapacityUnits': provisioned_throughput['ReadCapacityUnits'],
                                                        'WriteCapacityUnits': desired_write_throughput})
+
             client.get_waiter("table_exists").wait(TableName=restore_table_name)
 
     @staticmethod

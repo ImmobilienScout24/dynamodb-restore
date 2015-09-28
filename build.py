@@ -17,6 +17,7 @@ version = 1.0
 def set_properties(project):
     project.depends_on("boto3")
     project.depends_on("docopt")
+    project.depends_on("unittest2")
     project.build_depends_on("mock")
     project.set_property('coverage_break_build', False)
     project.set_property('install_dependencies_upgrade', True)
